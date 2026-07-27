@@ -15,7 +15,6 @@
     "preinstall",
     "treeshake",
     "tsup",
-    "typedoc",
     "Vals",
     "vite",
     "vitest",
