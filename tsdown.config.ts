@@ -1,14 +1,30 @@
-import { defineConfig } from "tsdown";
+import { defineConfig, type UserConfig } from "tsdown";
 
-export default defineConfig({
+const sharedConfig = {
   clean: true,
-  dts: true,
-  entry: {
-    index: "src/index.ts",
-  },
   format: ["cjs", "esm"],
   minify: Boolean(process.env.MINIFY),
+  outputOptions: {
+    codeSplitting: false,
+  },
   sourcemap: false,
   target: "esnext",
   treeshake: false,
-});
+} satisfies UserConfig;
+
+export default defineConfig([
+  {
+    ...sharedConfig,
+    dts: true,
+    entry: {
+      index: "src/index.ts",
+    },
+  },
+  {
+    ...sharedConfig,
+    dts: false,
+    entry: {
+      cli: "src/cli.ts",
+    },
+  },
+]);

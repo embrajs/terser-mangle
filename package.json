@@ -1,15 +1,21 @@
 {
   "name": "@embra/terser-mangle",
-  "version": "0.1.0",
-  "description": "terser-mangle",
+  "version": "0.0.1",
+  "description": "Deterministic cached property mangling with Terser",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/embrajs/terser-mangle.git"
   },
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.cts",
+  "bin": {
+    "terser-mangle": "./dist/cli.mjs"
+  },
   "exports": {
     ".": {
       "require": {
@@ -25,7 +31,8 @@
   "sideEffects": false,
   "files": [
     "src",
-    "dist"
+    "dist",
+    "!src/**/*.test.ts"
   ],
   "scripts": {
     "prepublishOnly": "npm run build",
@@ -39,10 +46,15 @@
     "test:coverage": "vitest run --coverage",
     "test:ci": "vitest run --coverage --coverage.reportsDirectory='./docs/coverage'",
     "build": "tsdown",
-    "build:min": "MINIFY=true tsdown && echo '' && gzip-size dist/index.mjs dist/index.js",
+    "build:min": "MINIFY=true tsdown && echo '' && gzip-size dist/index.mjs dist/index.cjs",
     "release": "commit-and-tag-version"
   },
-  "keywords": [],
+  "keywords": [
+    "terser",
+    "mangle",
+    "minify",
+    "property-mangling"
+  ],
   "maintainers": [
     {
       "name": "CRIMX",
@@ -61,5 +73,9 @@
     "typedoc": "^0.28.18",
     "typescript": "^6.0.2",
     "vitest": "^4.0.4"
+  },
+  "dependencies": {
+    "terser": "^5.49.0",
+    "tinyglobby": "^0.2.17"
   }
 }
