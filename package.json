@@ -73,7 +73,7 @@
     "vitest": "^4.0.4"
   },
   "dependencies": {
-    "terser": "^5.49.0",
+    "terser": "^5.50.0",
     "tinyglobby": "^0.2.17"
   }
 }
