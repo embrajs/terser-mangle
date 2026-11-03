@@ -1,4 +1,5 @@
 import path from "node:path";
+import { WriteStream } from "node:tty";
 import { parseArgs } from "node:util";
 
 import { mangle } from "./index";
@@ -64,10 +65,11 @@ export async function runCli(
       reserved: values.reserve,
     });
 
-    stdout(`Mangled ${result.files.length} file${result.files.length === 1 ? "" : "s"}.`);
-    if (!values.quiet) {
-      stdout("");
-      for (const file of result.files) stdout(path.relative(cwd, file.output));
+    if (values.quiet) {
+      stdout(`Mangled ${result.files.length} file${result.files.length === 1 ? "" : "s"}.`);
+    } else {
+      const prefix = WriteStream.prototype.hasColors() ? "\u001b[90mmangled\u001b[39m" : "mangled";
+      for (const file of result.files) stdout(`${prefix} ${path.relative(cwd, file.output)}`);
     }
     return 0;
   } catch (error) {

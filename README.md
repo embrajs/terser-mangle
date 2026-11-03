@@ -52,13 +52,11 @@ written only after every input has been transformed successfully.
 After processing, the command lists output paths relative to the working directory:
 
 ```text
-Mangled 2 files.
-
-dist/index.js
-dist/index.mjs
+mangled dist/index.js
+mangled dist/index.mjs
 ```
 
-Use `--quiet` to show only the file count.
+The `mangled` prefix is gray in terminals that support color. Use `--quiet` to show only the file count.
 
 ### Output
 
