@@ -49,6 +49,17 @@ terser-mangle dist/index.js dist/index.mjs
 Inputs are resolved together, deduplicated, sorted, and transformed with one shared cache. The cache and outputs are
 written only after every input has been transformed successfully.
 
+After processing, the command lists output paths relative to the working directory:
+
+```text
+Mangled 2 files.
+
+dist/index.js
+dist/index.mjs
+```
+
+Use `--quiet` to show only the file count.
+
 ### Output
 
 In-place processing is the default. Use `--out-file` with exactly one input, or `--out-dir` to preserve the input
@@ -78,6 +89,7 @@ Without `--minify`, normal identifiers remain unchanged and Terser emits readabl
 -o, --out-file <file>  Write one input to a file
     --reserve <name>   Preserve a property name (repeatable)
     --minify           Also compress and mangle identifiers
+-q, --quiet            Only show the file count
 -h, --help             Show help
 ```
 

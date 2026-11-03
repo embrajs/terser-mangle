@@ -36,7 +36,7 @@ describe("terser-mangle CLI", () => {
     const exitCode = await runCli([], io.environment);
 
     expect(exitCode).toBe(0);
-    expect(io.stdout).toEqual(["Mangled 2 files."]);
+    expect(io.stdout).toEqual(["Mangled 2 files.", "", "dist/a.js", "dist/b.mjs"]);
     expect(io.stderr).toEqual([]);
     expect(await readFile(path.join(cwd, "dist/a.js"), "utf8")).not.toContain("value_");
     await expect(readJson(path.join(cwd, "mangle-cache.json"))).resolves.toHaveProperty("value_");
@@ -71,7 +71,7 @@ describe("terser-mangle CLI", () => {
     const output = await readFile(path.join(cwd, "output.js"), "utf8");
 
     expect(exitCode).toBe(0);
-    expect(io.stdout).toEqual(["Mangled 1 file."]);
+    expect(io.stdout).toEqual(["Mangled 1 file.", "", "output.js"]);
     expect(output.length).toBeLessThan(source.length / 2);
     expect(output).toContain("keep_");
     expect(output).toContain("alsoKeep_");
@@ -93,7 +93,7 @@ describe("terser-mangle CLI", () => {
     const exitCode = await runCli(["build/**/*", "--out-dir", "output"], io.environment);
 
     expect(exitCode).toBe(0);
-    expect(io.stdout).toEqual(["Mangled 2 files."]);
+    expect(io.stdout).toEqual(["Mangled 2 files.", "", "output/nested/a.js", "output/root.mjs"]);
     await expect(readFile(path.join(cwd, "build/nested/a.js"), "utf8")).resolves.toBe(source);
     await expect(readFile(path.join(cwd, "output/nested/a.js"), "utf8")).resolves.not.toContain("value_");
     await expect(readFile(path.join(cwd, "output/root.mjs"), "utf8")).resolves.not.toContain("value_");
@@ -119,7 +119,7 @@ describe("terser-mangle CLI", () => {
     const exitCode = await runCli(["input.js"], io.environment);
 
     expect(exitCode).toBe(0);
-    expect(io.stdout).toEqual(["Mangled 1 file."]);
+    expect(io.stdout).toEqual(["Mangled 1 file.", "", "input.js"]);
     expect(io.stderr).toEqual([]);
     await expect(readFile(path.join(cwd, "input.js"), "utf8")).resolves.not.toContain("sourceMappingURL");
     await expect(readJson(path.join(cwd, "mangle-cache.json"))).resolves.toHaveProperty("value_");
@@ -134,7 +134,35 @@ describe("terser-mangle CLI", () => {
     await expect(runCli(["--unknown"], { cwd })).resolves.toBe(1);
 
     expect(stdout).toHaveBeenCalledWith("Mangled 1 file.");
+    expect(stdout).toHaveBeenCalledWith("dist/index.js");
     expect(stderr).toHaveBeenCalledWith(expect.stringMatching(/^terser-mangle: Unknown option/));
+  });
+
+  it.each(["--quiet", "-q"])("only shows the file count with %s", async (option) => {
+    const cwd = await createProject({ "dist/index.js": "const item = { value_: getValue() };\n" });
+    const io = createIo(cwd);
+
+    const exitCode = await runCli([option], io.environment);
+
+    expect(exitCode).toBe(0);
+    expect(io.stdout).toEqual(["Mangled 1 file."]);
+    expect(io.stderr).toEqual([]);
+    await expect(readFile(path.join(cwd, "dist/index.js"), "utf8")).resolves.not.toContain("value_");
+  });
+
+  it("shows absolute output paths relative to the process cwd when cwd is omitted", async () => {
+    const directory = await createProject({ "input.js": "const item = { value_: getValue() };\n" });
+    const io = createIo(directory);
+    const output = path.join(directory, "output.js");
+
+    const exitCode = await runCli(
+      [path.join(directory, "input.js"), "--out-file", output, "--cache", path.join(directory, "cache.json")],
+      { stderr: io.environment.stderr, stdout: io.environment.stdout },
+    );
+
+    expect(exitCode).toBe(0);
+    expect(io.stdout).toEqual(["Mangled 1 file.", "", path.relative(process.cwd(), output)]);
+    expect(io.stderr).toEqual([]);
   });
 
   it("formats non-Error failures from an output handler", async () => {

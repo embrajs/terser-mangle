@@ -1,3 +1,4 @@
+import path from "node:path";
 import { parseArgs } from "node:util";
 
 import { mangle } from "./index";
@@ -12,6 +13,7 @@ Options:
   -o, --out-file <file>  Write one input to a file
       --reserve <name>   Preserve a property name (repeatable)
       --minify           Also compress and mangle identifiers
+  -q, --quiet            Only show the file count
   -h, --help             Show this help
 
 With no inputs, terser-mangle recursively processes dist.
@@ -40,6 +42,7 @@ export async function runCli(
         minify: { type: "boolean" },
         "out-dir": { short: "d", type: "string" },
         "out-file": { short: "o", type: "string" },
+        quiet: { short: "q", type: "boolean" },
         reserve: { multiple: true, type: "string" },
       },
       strict: true,
@@ -50,9 +53,10 @@ export async function runCli(
       return 0;
     }
 
+    const cwd = path.resolve(environment.cwd ?? process.cwd());
     const result = await mangle({
       cache: values.cache,
-      cwd: environment.cwd,
+      cwd,
       inputs: positionals,
       minify: values.minify,
       outDir: values["out-dir"],
@@ -61,6 +65,10 @@ export async function runCli(
     });
 
     stdout(`Mangled ${result.files.length} file${result.files.length === 1 ? "" : "s"}.`);
+    if (!values.quiet) {
+      stdout("");
+      for (const file of result.files) stdout(path.relative(cwd, file.output));
+    }
     return 0;
   } catch (error) {
     stderr(`terser-mangle: ${error instanceof Error ? error.message : String(error)}`);
